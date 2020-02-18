@@ -12,12 +12,15 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
         data=  new Object[lenght];
     }
 
-    public MyHashSet(int _lenght){
+    public MyHashSet(int _lenght) throws IllegalArgumentException {
+        if(_lenght<0)
+            throw new IllegalArgumentException();
        this.lenght=_lenght;
         data=  new Object[lenght];
     }
 
-    public MyHashSet(Collection<T> c){
+    public MyHashSet(Collection<T> c) throws IllegalArgumentException{
+        if(c==null) throw new IllegalArgumentException();
         lenght=(int)(c.size()/0.75)+2;
         data=  new Object[lenght];
         this.addAll(c);
@@ -128,7 +131,8 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
     }
 
     @Override
-    public <T1> T1[] toArray(T1[] a) {
+    public <T1> T1[] toArray(T1[] a) throws IllegalArgumentException {
+        if(a==null) throw new IllegalArgumentException();
         if(a.length<numberOfElements)
             a=(T1[])new Object[numberOfElements];
 
@@ -201,7 +205,8 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
     }
 
     @Override
-    public boolean containsAll(Collection<?> c) {
+    public boolean containsAll(Collection<?> c) throws IllegalArgumentException {
+        if(c==null) throw new IllegalArgumentException();
         for (Object o : c) {
             if (!this.contains(o))
                 return false;
@@ -210,7 +215,8 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
     }
 
     @Override
-    public boolean addAll(Collection<? extends T> c) {
+    public boolean addAll(Collection<? extends T> c) throws IllegalArgumentException{
+        if(c==null) throw new IllegalArgumentException();
         for (T element: c) {
             this.add(element);
         }
@@ -218,7 +224,8 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
     }
 
     @Override
-    public boolean retainAll(Collection<?> c) {
+    public boolean retainAll(Collection<?> c) throws IllegalArgumentException{
+        if(c==null) throw new IllegalArgumentException();
         int removed=0;
         for (T t: this ){
             if(!c.contains(t)) {
@@ -230,7 +237,9 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
     }
 
     @Override
-    public boolean removeAll(Collection<?> c) {
+    public boolean removeAll(Collection<?> c)throws IllegalArgumentException {
+        if(c==null) throw new IllegalArgumentException();
+
         int removed=0;
         for (Object obj: c ){
             if(this.contains(obj)) {
