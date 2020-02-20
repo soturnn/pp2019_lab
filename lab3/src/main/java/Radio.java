@@ -7,9 +7,14 @@ public class Radio {
     private volatile float currentStation;
     public final float maxStation=108;
     public final float minStation=88;
+
+    public ArrayList<Float> getStations() {
+        return stations;
+    }
+
     private ArrayList<Float> stations;
-    private Thread scanButton;
-    private Thread resetButton;
+    private ScanThread scanButton;
+    private ResetThread resetButton;
     private boolean on=false;
     private ReentrantLock radioSetting;
 
@@ -25,7 +30,7 @@ public class Radio {
         return currentStation;
     }
 
-    private void setCurrentStation(float _currentStation) {
+    public void setCurrentStation(float _currentStation) {
         if((_currentStation<=maxStation)&&(_currentStation>=minStation))
             this.currentStation = _currentStation;
     }
@@ -43,20 +48,12 @@ public class Radio {
 
     public float scan(){
 
-        scanButton=new Thread(){
-            @Override
-            public void run() {
-                super.run();
-                do{ setCurrentStation( getCurrentStation()-(float)0.01);}
-                while ((!stations.contains(getCurrentStation()))&&(getCurrentStation()>maxStation));
-            }
-        };
+
         radioSetting.lock();
         try{
-            if(isOn()) {
-                scanButton.start();
-                scanButton.run();
-            }
+            if(isOn())
+                scanButton.setDone(false);
+
         }
         catch (Exception e){
             System.out.println(e.getMessage());
@@ -70,20 +67,10 @@ public class Radio {
 
     public float reset(){
 
-        resetButton=new Thread(){
-            @Override
-            public void run() {
-                super.run();
-                do{setCurrentStation( getCurrentStation()+(float)0.01);}
-                while ((!stations.contains(getCurrentStation()))&&(getCurrentStation()<maxStation));
-            }
-        };
         radioSetting.lock();
         try{
-            if(isOn()) {
-                resetButton.start();
-                resetButton.run();
-            }
+            if(isOn())
+               resetButton.setDone(false);
         }
         catch (Exception e){
             System.out.println(e.getMessage());
@@ -104,6 +91,11 @@ public class Radio {
             stations.add(s);
         }
         radioSetting=new ReentrantLock();
+
+        resetButton= new ResetThread(this);
+        scanButton= new ScanThread(this);
+        resetButton.start();
+        scanButton.start();
 
 
     }
