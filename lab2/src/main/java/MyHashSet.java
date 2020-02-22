@@ -13,16 +13,25 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
     }
 
     public MyHashSet(int _lenght) throws IllegalArgumentException {
-        if(_lenght<0)
-            throw new IllegalArgumentException();
+        try {
+            if (_lenght < 0)
+                throw new IllegalArgumentException();
+        }
+        catch (IllegalArgumentException e){
+            e.printStackTrace();
+        }
        this.lenght=_lenght;
         data=  new Object[lenght];
     }
 
-    public MyHashSet(Collection<T> c) throws IllegalArgumentException{
-        if(c==null) throw new IllegalArgumentException();
-        lenght=(int)(c.size()/0.75)+2;
-        data=  new Object[lenght];
+    public MyHashSet(Collection<T> c) throws NullPointerException{
+        try {
+            lenght = (int) (c.size() / 0.75) + 2;
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        data= new Object[lenght];
         this.addAll(c);
     }
 
@@ -131,11 +140,14 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
     }
 
     @Override
-    public <T1> T1[] toArray(T1[] a) throws IllegalArgumentException {
-        if(a==null) throw new IllegalArgumentException();
+    public <T1> T1[] toArray(T1[] a) throws NullPointerException {
+        try{
         if(a.length<numberOfElements)
             a=(T1[])new Object[numberOfElements];
-
+        }
+        catch(NullPointerException e){
+            e.printStackTrace();
+        }
         int i=0;
         for (T element: this) {
             a[i]=(T1)element;
@@ -205,48 +217,65 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
     }
 
     @Override
-    public boolean containsAll(Collection<?> c) throws IllegalArgumentException {
-        if(c==null) throw new IllegalArgumentException();
-        for (Object o : c) {
-            if (!this.contains(o))
-                return false;
+    public boolean containsAll(Collection<?> c) throws NullPointerException {
+        try {
+            for (Object o : c) {
+                if (!this.contains(o))
+                    return false;
+            }
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
         }
         return true;
     }
 
     @Override
-    public boolean addAll(Collection<? extends T> c) throws IllegalArgumentException{
-        if(c==null) throw new IllegalArgumentException();
-        for (T element: c) {
-            this.add(element);
+    public boolean addAll(Collection<? extends T> c) throws NullPointerException{
+        try {
+            for (T element : c) {
+                this.add(element);
+            }
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
         }
         return false;
     }
 
     @Override
-    public boolean retainAll(Collection<?> c) throws IllegalArgumentException{
-        if(c==null) throw new IllegalArgumentException();
+    public boolean retainAll(Collection<?> c) throws NullPointerException{
+
         int removed=0;
-        for (T t: this ){
-            if(!c.contains(t)) {
-                this.remove(t);
-                removed++;
+        try {
+            for (T t : this) {
+                if (!c.contains(t)) {
+                    this.remove(t);
+                    removed++;
+                }
             }
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
         }
         return removed>0;
     }
 
     @Override
-    public boolean removeAll(Collection<?> c)throws IllegalArgumentException {
-        if(c==null) throw new IllegalArgumentException();
-
+    public boolean removeAll(Collection<?> c)throws NullPointerException {
         int removed=0;
-        for (Object obj: c ){
-            if(this.contains(obj)) {
-                this.remove(obj);
-                removed++;
+        try {
+            for (Object obj: c ){
+                if(this.contains(obj)) {
+                    this.remove(obj);
+                    removed++;
+                }
             }
         }
+        catch (NullPointerException e){
+            e.printStackTrace();
+        }
+
         return removed>0;
     }
 
