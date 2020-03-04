@@ -81,47 +81,56 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
 
             @Override
             public boolean hasNext() {
-                if (index==-1) {
+                int nextIndex=0;
+               if (index==-1) {
+                    while ((currentNode == null)&&(nextIndex<lenght-1))
+                    {
+                        nextIndex++;
+                        currentNode = (Node<T>)data[nextIndex];
+                    }
+                }
+                else {
+                    if (currentNode.getNext()!= null)
+                        return true;
+                    Node<T> nextNode=currentNode.getNext();
+                    nextIndex=index+1;
+                    while ((nextNode == null) && (nextIndex< lenght))
+                    {
+                        nextNode= (Node<T>) data[nextIndex];
+                        if (nextNode!= null)
+                            return true;
+                        nextIndex++;
+                    }
+
+                }
+                return nextIndex<lenght;
+            }
+
+            @Override
+            public T next() {
+                if(index==-1){
                     index++;
-                    while ((currentNode == null)&&(index<lenght))
+                    while ((currentNode == null)&&(index<lenght-1))
                     {
                         index++;
                         currentNode = (Node<T>)data[index];
                     }
                 }
                 else {
-                    if (index==lenght - 1)
-                        return currentNode.getNext() != null;
-                    Node<T> nextNode=currentNode.getNext();
-                    int nextIndex=index+1;
-                    while ((nextNode == null) && (nextIndex< lenght))
-                    {
-                        nextNode= (Node<T>) data[nextIndex];
-                        if (nextNode!= null)
+                    currentNode = currentNode.getNext();
+                    while ((currentNode == null) && (index < lenght - 1)) {
+                        index++;
+                        currentNode = (Node<T>) data[index];
+                        if (currentNode != null)
                             break;
-                        nextIndex++;
                     }
-                    return nextIndex<lenght;
                 }
-                 return index < lenght;
-            }
-
-            @Override
-            public T next() {
-                T returnValue=currentNode.getValue();
-                currentNode=currentNode.getNext();
-                while ((currentNode == null) && (index < lenght)) {
-                    index++;
-                    currentNode= (Node<T>)data[index];
-                    if (currentNode!= null)
-                        break;
-                }
-                return returnValue;
+                return currentNode.getValue();
             }
 
             @Override
             public void remove() {
-
+                throw new UnsupportedOperationException();
             }
         };
 
@@ -140,14 +149,11 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
     }
 
     @Override
-    public <T1> T1[] toArray(T1[] a) throws NullPointerException {
-        try{
+    public <T1> T1[] toArray(T1[] a) throws IllegalArgumentException {
+        if(a==null) throw new IllegalArgumentException();
         if(a.length<numberOfElements)
             a=(T1[])new Object[numberOfElements];
-        }
-        catch(NullPointerException e){
-            e.printStackTrace();
-        }
+
         int i=0;
         for (T element: this) {
             a[i]=(T1)element;
@@ -160,9 +166,11 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
     public boolean add(T t) {
 
         if((float)(numberOfElements+1)/lenght>0.75)
-            rebuilding((int) Math.floor(0.75 * numberOfElements) + 2);
+            rebuilding((int)(1.5*numberOfElements) + 2);
         if(!this.contains(t))
             numberOfElements++;
+        else
+            return false;
 
         int h = hashFunction(t);
         Node<T> ptr = (Node<T>)data[h];
@@ -171,8 +179,6 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
             return true;
         }
         while (ptr != null) {
-            if (ptr.getValue().equals(t))
-                return false;
             if(ptr.getNext()==null) {
                 ptr.setNext(new Node<T>(t));
                 return true;
