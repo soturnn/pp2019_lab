@@ -1,8 +1,9 @@
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 class RadioTest {
 
-    @org.junit.jupiter.api.Test
+    @Test
     void scan() {
         Radio r=new Radio();
         for (int i = 0; i <10 ; i++) {
@@ -19,9 +20,7 @@ class RadioTest {
             else
                 r.reset();
         }
+         Assert.assertTrue(true);
     }
 
-    @org.junit.jupiter.api.Test
-    void reset() {
-    }
 }
