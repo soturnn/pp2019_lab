@@ -1,5 +1,3 @@
-import java.util.Random;
-
 public class NormalDistribution {
 
     private static int m=0;

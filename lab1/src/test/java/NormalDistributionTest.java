@@ -1,11 +1,12 @@
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.Assert;
+import org.junit.Test;
 
 class NormalDistributionTest {
 
-    @org.junit.jupiter.api.Test
-    void randomRef() {
+    @Test
+   public void randomRef() {
         double result = NormalDistribution.randomRef();
-        assertTrue(Math.abs(result)<3);
+        Assert.assertTrue(Math.abs(result)<4);
     }
 
 }
