@@ -1,4 +1,4 @@
-import java.util.concurrent.Callable;
+import javax.print.attribute.standard.MediaSize;
 import java.util.concurrent.CountDownLatch;
 
 class CalculatingThread extends Thread{
@@ -10,8 +10,6 @@ class CalculatingThread extends Thread{
 
     CalculatingThread(int _bottomIndex, int _topIndex, SLAE _matr, CountDownLatch _latch){
         try {
-            if(_matr==null)
-                throw new NullPointerException();
             matr = _matr;
             if((_bottomIndex<0)||(_topIndex<0)||(_bottomIndex>matr.matrix.length)||(_topIndex>matr.matrix.length))
                 throw new IllegalArgumentException();
@@ -29,18 +27,30 @@ class CalculatingThread extends Thread{
     @Override
     public void run() {
 
-        for(int i=bottomIndex+1;i<=topIndex;i++){
+        for(int i=bottomIndex+1;i<=topIndex;i++)
+        try {
             double coefficient=-matr.matrix[i][i-1]/matr.matrix[i-1][i-1];
+            if(Double.isNaN(coefficient))
+                throw new ArithmeticException("Деление на 0");
             for(int j=0;j<matr.matrix.length;j++)
                 matr.matrix[i][j]+=coefficient*matr.matrix[i-1][j];
             matr.setRightSide(i,matr.getRightSide(i)+coefficient*matr.getRightSide(i-1));
         }
+        catch(ArithmeticException e){
+            e.printStackTrace();
+        }
 
-        for (int i = topIndex-1; i >=bottomIndex ; i--) {
+        for (int i = topIndex-1; i >=bottomIndex ; i--)
+        try{
             double coefficient = -matr.matrix[i][i+1]/matr.matrix[i+1][i+1];
+            if(Double.isNaN(coefficient))
+                throw new ArithmeticException("Деление на 0");
             for(int j=0;j<matr.matrix.length;j++)
                 matr.matrix[i][j]+=coefficient*matr.matrix[i+1][j];
             matr.setRightSide(i,matr.getRightSide(i)+coefficient*matr.getRightSide(i+1));
+        }
+        catch (ArithmeticException e){
+            e.printStackTrace();
         }
 
         latch.countDown();

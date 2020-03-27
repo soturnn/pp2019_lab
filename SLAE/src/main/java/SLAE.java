@@ -86,9 +86,12 @@ public class SLAE {
         catch (IllegalArgumentException|NullPointerException e){
             e.printStackTrace();
         }
-        matrix=_matrix;
+        matrix=new double[_matrix.length][_matrix.length];
+        for (int i = 0; i < _matrix.length ; i++)
+            for (int j = 0; j < _matrix.length; j++)
+                matrix[i][j]=_matrix[i][j];
         numberOfThreads=_numberOfThreads;
-        rightSideOfEquation=coef;
+        rightSideOfEquation=coef.clone();
         width = matrix.length/numberOfThreads;
         countDownLatch=new CountDownLatch(numberOfThreads+1);
         x=new double[matrix.length];
@@ -176,8 +179,9 @@ public class SLAE {
         alpha[1]=-topDiagonal[0]/mainDiagonal[0];
         beta[1]=rightSide[0]/mainDiagonal[0];
         for (int i = 1; i < 2*numberOfThreads-1 ; i++) {
-            alpha[i+1]=-topDiagonal[i]/(bottomDiagonal[i]*alpha[i]+mainDiagonal[i]);
-            beta[i+1]=(rightSide[i]-bottomDiagonal[i]*beta[i])/(bottomDiagonal[i]*alpha[i]+mainDiagonal[i]);
+            final double denominator = bottomDiagonal[i] * alpha[i] + mainDiagonal[i];
+            alpha[i+1]=-topDiagonal[i]/ denominator;
+            beta[i+1]=(rightSide[i]-bottomDiagonal[i]*beta[i])/denominator;
         }
 
         partSolution[2*numberOfThreads-1]=
@@ -194,6 +198,18 @@ public class SLAE {
         }
         x[(numberOfThreads-1)*width]=partSolution[2*(numberOfThreads-1)];
         x[matrix.length-1]=partSolution[2*numberOfThreads-1];
+
+        //test
+
+        for (int i = 0; i < intermediateMatr.length; i++) {
+            double resultOfSubstitution=0;
+            for (int j = 0; j < intermediateMatr.length; j++)
+                resultOfSubstitution+=intermediateMatr[i][j]*partSolution[j];
+            if(resultOfSubstitution!=0)
+                System.out.println("Промежуточная система решена неверно! "+ resultOfSubstitution);
+            else
+                System.out.println("Верно");
+        }
 
     }
 
@@ -216,38 +232,57 @@ public class SLAE {
 
     }
 
+    public static double det(double[][] matrix) {
+        double result=0;
+        if (matrix.length == 1)
+            return matrix[0][0];
+        if (matrix.length == 2)
+            return matrix[0][0]*matrix[1][1]-matrix[0][1]*matrix[1][0];
+
+        for (int i = 0; i < matrix.length; i++)
+            if(matrix[0][i]!=0)
+            {
+                double[][] minor= new double[matrix.length-1][matrix.length-1];
+                for (int j = 1; j < matrix.length; j++)
+                    for (int k = 0; k < matrix.length; k++)
+                        if (k != i)
+                            minor[j-1][(k>i) ? k-1 : k] = matrix[j][k];
+
+                result += matrix[0][i] * det(minor)*Math.pow(-1,i);
+            }
+        return result;
+    }
+
     public static void main(String[] args) {
 
-        /*
+
         double[][] matrix= {
                  {-2,1,0,0,0,0,0,0,0,0,0,0},
-                 {-1,-1,1,0,0,0,0,0,0,0,0,0},
-                 {0,-1,2,-1,0,0,0,0,0,0,0,0},
-                 {0,0,3,-1,-1,0,0,0,0,0,0,0},
-                 {0,0,0,4,4,-6,0,0,0,0,0,0},
-                 {0,0,0,0,-11,1,7,0,0,0,0,0},
+                 {-1,-11,1,0,0,0,0,0,0,0,0,0},
+                 {0,-1,21,-1,0,0,0,0,0,0,0,0},
+                 {0,0,3,-10,-1,0,0,0,0,0,0,0},
+                 {0,0,0,4,49,-6,0,0,0,0,0,0},
+                 {0,0,0,0,-11,19,7,0,0,0,0,0},
                  {0,0,0,0,0,-2,4,-2,0,0,0,0},
                  {0,0,0,0,0,0,-1,2,-1,0,0,0},
                  {0,0,0,0,0,0,0,1,-12,10,0,0},
-                 {0,0,0,0,0,0,0,0,10,2,-10,0},
-                 {0,0,0,0,0,0,0,0,0,1,10,-10},
-                 {0,0,0,0,0,0,0,0,0,0,12,11}};
+                 {0,0,0,0,0,0,0,0,10,22,-10,0},
+                 {0,0,0,0,0,0,0,0,0,1,10,-1},
+                 {0,0,0,0,0,0,0,0,0,0,10,11}};
 
-         */
-      //  double[] rightSide={0,0,0,0,12,-30,0,0,-90,-80,0,0};
-        double[][] matrix= {
+
+       double[] rightSide={0,0,0,0,12,-30,0,0,-90,-80,0,0};
+     /*   double[][] matrix= {
                  {-2,1,0,0,0,0},
-                 {-1,-1,1,0,0,0},
+                 {-1,-3,1,0,0,0},
                  {0,-1,2,-1,0,0},
-                 {0,0,3,-1,-1,0},
-                 {0,0,0,4,4,-6},
-                 {0,0,0,0,-11,1}};
+                 {0,0,3,5,-1,0},
+                 {0,0,0,4,11,-6},
+                 {0,0,0,0,-11,12}};
         double[] rightSide={-3,2,10,13,-16,-29};
-        SLAE system=new SLAE(matrix,rightSide,3);
+        */
+        SLAE system=new SLAE(matrix,rightSide,2);
         system.solve();
-        for (int i = 0; i < x.length; i++) {
-            System.out.println(x[i]);
-        }
 
     }
 }
