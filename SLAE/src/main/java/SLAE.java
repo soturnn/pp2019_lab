@@ -171,6 +171,27 @@ public class SLAE {
             }
         }
 
+        topDiagonal[2*numberOfThreads-1]=topDiagonal[2*numberOfThreads-2]=0;
+        bottomDiagonal[0]=bottomDiagonal[1]=0;
+        for (int i = 0; i < numberOfThreads-1; i++) {
+            topDiagonal[2*i]=matrix[width*i][width*(i+1)];
+            topDiagonal[2*i+1]=matrix[width*(i+1)-1][width*(i+1)-1];
+        }
+        for (int i = 0; i < numberOfThreads; i++) {
+           mainDiagonal[2*i]=(i==0) ? matrix[0][0] : matrix[width*i][width*i-1];
+           if (i==numberOfThreads-1)
+               mainDiagonal[2*i+1]=matrix[matrix.length-1][matrix.length-1];
+           else
+               mainDiagonal[2*i+1]=matrix[width*(i+1)-1][width*(i+1)];
+        }
+        for (int i = 1; i < numberOfThreads; i++) {
+            bottomDiagonal[2*i]=matrix[width*i][width*i];
+            bottomDiagonal[2*i+1]=(i==numberOfThreads-1)? matrix[matrix.length-1][width*i-1]
+                                                        : matrix[width*(i+1)-1][width*i-1] ;
+        }
+
+
+
         double[] alpha=new double[2*numberOfThreads];
         double[] beta= new double[2*numberOfThreads];
         double[] partSolution=new  double[2*numberOfThreads];
@@ -192,6 +213,12 @@ public class SLAE {
             partSolution[i]=alpha[i+1]*partSolution[i+1]+beta[i+1];
         }
 
+        for (int i = 1; i < partSolution.length-2; i++) {
+            double temp=partSolution[i];
+            partSolution[i]=partSolution[i+1];
+            partSolution[i+1]=temp;
+        }
+
         for (int i = 0; i < numberOfThreads-1; i++) {
                 x[i*width]=partSolution[2*i];
                 x[(i+1)*width-1]=partSolution[2*i+1];
@@ -199,17 +226,7 @@ public class SLAE {
         x[(numberOfThreads-1)*width]=partSolution[2*(numberOfThreads-1)];
         x[matrix.length-1]=partSolution[2*numberOfThreads-1];
 
-        //test
 
-        for (int i = 0; i < intermediateMatr.length; i++) {
-            double resultOfSubstitution=0;
-            for (int j = 0; j < intermediateMatr.length; j++)
-                resultOfSubstitution+=intermediateMatr[i][j]*partSolution[j];
-            if(resultOfSubstitution!=0)
-                System.out.println("Промежуточная система решена неверно! "+ resultOfSubstitution);
-            else
-                System.out.println("Верно");
-        }
 
     }
 
