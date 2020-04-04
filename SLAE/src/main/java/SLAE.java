@@ -1,15 +1,13 @@
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 public class SLAE {
-    public static double[][] matrix;
-    private static double[] rightSideOfEquation;
-    private static double[] x;
+    public volatile static double[][] matrix;
+    private volatile static double[] rightSideOfEquation;
+    private volatile static double[] x;
     private int numberOfThreads=3;
     private int width;
-    private CountDownLatch countDownLatch;
+    private CyclicBarrier barrier;
 
     public double getX(int index) {
         try {
@@ -65,16 +63,16 @@ public class SLAE {
         matrix = new double [n][n];
         rightSideOfEquation=new double[n];
         for (int i = 0; i < n; i++) {
-            matrix[i][i] = 20 * Math.random()+0.1;
-            rightSideOfEquation[i]=20 * Math.random();
-            if (i != 0)
-                matrix[i][i - 1] = 20 * Math.random()+0.1;
+            if(i!=0)
+                matrix[i][i-1]=Math.random()*20-10;
             if(i!=n-1)
-                matrix[i][i + 1] = 20 * Math.random()+0.1;
+                matrix[i][i+1]=Math.random()*20-10;
+            matrix[i][i]= Math.random()*10+20;
+            rightSideOfEquation[i]=Math.random()*80-20;
         }
 
         width = matrix.length/numberOfThreads;
-        countDownLatch=new CountDownLatch(numberOfThreads+1);
+        barrier=new CyclicBarrier(numberOfThreads+1);
         x=new double[matrix.length];
     }
 
@@ -91,88 +89,27 @@ public class SLAE {
             for (int j = 0; j < _matrix.length; j++)
                 matrix[i][j]=_matrix[i][j];
         numberOfThreads=_numberOfThreads;
-        rightSideOfEquation=coef.clone();
-        width = matrix.length/numberOfThreads;
-        countDownLatch=new CountDownLatch(numberOfThreads+1);
-        x=new double[matrix.length];
-    }
-
-    SLAE(String fileName){
-
-        File file=new File(fileName);
-        try {
-            Scanner scan=new Scanner(file);
-            int n = scan.nextInt();
-            matrix = new double [n][n];
-            rightSideOfEquation=new double[n];
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n && scan.hasNextDouble(); j++)
-                    matrix[i][j] = scan.nextDouble();
-                rightSideOfEquation[i]=scan.nextDouble();
-            }
-        }catch (FileNotFoundException|NullPointerException e){
-            e.printStackTrace();
+       // rightSideOfEquation=coef.clone();
+        rightSideOfEquation=new double[coef.length];
+        for (int i = 0; i < coef.length; i++) {
+            rightSideOfEquation[i]=coef[i];
         }
-        if(matrix.length/3<3)
-            numberOfThreads=2;
-
         width = matrix.length/numberOfThreads;
-        countDownLatch=new CountDownLatch(numberOfThreads+1);
+        barrier=new CyclicBarrier(numberOfThreads+1);
         x=new double[matrix.length];
-
     }
 
-    public void sweepMethod(double[][] matrix, int numberOfThreads){
+    public void sweepMethod(){
 
         double[] bottomDiagonal=new double[2*numberOfThreads];
         double[] topDiagonal=new double[2*numberOfThreads];
         double[] mainDiagonal=new double[2*numberOfThreads];
         double[] rightSide=new double[2*numberOfThreads];
 
-        double[][] intermediateMatr=new double[2*numberOfThreads][2*numberOfThreads];
-        for(int i=0;i<numberOfThreads;i++){
-            int width=matrix.length/numberOfThreads;
-            if(i==0){
-                rightSide[0]=rightSideOfEquation[0];
-                rightSide[1]=rightSideOfEquation[width-1];
-                bottomDiagonal[0]=bottomDiagonal[1]=0;
-                intermediateMatr[0][0]=mainDiagonal[0]=matrix[0][0];
-                intermediateMatr[0][1]=topDiagonal[0]=matrix[0][width];
-
-                intermediateMatr[1][1]=mainDiagonal[1]=matrix[width-1][width-1];
-                intermediateMatr[1][2]=topDiagonal[1]=matrix[width-1][width];
-
-            }
-            else if(i==numberOfThreads-1){
-                rightSide[2*numberOfThreads-2]=rightSideOfEquation[i*width];
-                rightSide[2*numberOfThreads-1]=rightSideOfEquation[rightSideOfEquation.length-1];
-                topDiagonal[2*numberOfThreads-2]=topDiagonal[2*numberOfThreads-1]=0;
-                intermediateMatr[2*numberOfThreads-2][2*numberOfThreads-3]=bottomDiagonal[2*numberOfThreads-2]=
-                         matrix[width*(numberOfThreads-1)][width*(numberOfThreads-1)-1];
-                intermediateMatr[2*numberOfThreads-2][2*numberOfThreads-2]=mainDiagonal[2*numberOfThreads-2]=
-                         matrix[width*(numberOfThreads-1)][width*(numberOfThreads-1)];
-
-                intermediateMatr[2*numberOfThreads-1][2*numberOfThreads-2]=bottomDiagonal[2*numberOfThreads-1]=
-                         matrix[matrix.length-1][width*(numberOfThreads-1)-1];
-                intermediateMatr[2*numberOfThreads-1][2*numberOfThreads-1]=mainDiagonal[2*numberOfThreads-1]=
-                         matrix[matrix.length-1][matrix.length-1];
-            }
-            else{
-                rightSide[2*i]=rightSideOfEquation[width*i];
-                rightSide[2*i+1]=rightSideOfEquation[width*(i+1)-1];
-
-                intermediateMatr[2*i][2*i-1]=bottomDiagonal[2*i]=matrix[width*i][width*i-1];
-                intermediateMatr[2*i][2*i]=mainDiagonal[2*i]=matrix[width*i][width*i];
-                intermediateMatr[2*i][2*i+1]=topDiagonal[2*i]=matrix[width*i][width*(i+1)];
-
-                intermediateMatr[2*i+1][2*i]=bottomDiagonal[2*i+1]=matrix[width*(i+1)-1][width*i-1];
-                intermediateMatr[2*i+1][2*i+1]=mainDiagonal[2*i+1]=matrix[width*(i+1)-1][width*(i+1)-1];
-                intermediateMatr[2*i+1][2*i+2]=topDiagonal[2*i+1]=matrix[width*(i+1)-1][width*(i+1)];
-            }
-        }
-
         topDiagonal[2*numberOfThreads-1]=topDiagonal[2*numberOfThreads-2]=0;
         bottomDiagonal[0]=bottomDiagonal[1]=0;
+        rightSide[0]=rightSideOfEquation[0];
+        rightSide[1]=rightSideOfEquation[width-1];
         for (int i = 0; i < numberOfThreads-1; i++) {
             topDiagonal[2*i]=matrix[width*i][width*(i+1)];
             topDiagonal[2*i+1]=matrix[width*(i+1)-1][width*(i+1)-1];
@@ -185,11 +122,19 @@ public class SLAE {
                mainDiagonal[2*i+1]=matrix[width*(i+1)-1][width*(i+1)];
         }
         for (int i = 1; i < numberOfThreads; i++) {
+            if(i==numberOfThreads-1){
+                rightSide[2*numberOfThreads-2]=rightSideOfEquation[i*width];
+                rightSide[2*numberOfThreads-1]=rightSideOfEquation[rightSideOfEquation.length-1];
+            }
+            else {
+                rightSide[2 * i] = rightSideOfEquation[width * i];
+                rightSide[2 * i + 1] = rightSideOfEquation[width * (i + 1) - 1];
+            }
+
             bottomDiagonal[2*i]=matrix[width*i][width*i];
             bottomDiagonal[2*i+1]=(i==numberOfThreads-1)? matrix[matrix.length-1][width*i-1]
                                                         : matrix[width*(i+1)-1][width*i-1] ;
         }
-
 
 
         double[] alpha=new double[2*numberOfThreads];
@@ -213,7 +158,8 @@ public class SLAE {
             partSolution[i]=alpha[i+1]*partSolution[i+1]+beta[i+1];
         }
 
-        for (int i = 1; i < partSolution.length-2; i++) {
+
+        for (int i = 1; i < partSolution.length-2; i+=2) {
             double temp=partSolution[i];
             partSolution[i]=partSolution[i+1];
             partSolution[i+1]=temp;
@@ -226,26 +172,33 @@ public class SLAE {
         x[(numberOfThreads-1)*width]=partSolution[2*(numberOfThreads-1)];
         x[matrix.length-1]=partSolution[2*numberOfThreads-1];
 
-
-
     }
 
-    public void solve(){
-        double[] solution = new double[matrix.length];
+    public void solve() throws InterruptedException {
         for (int i = 0; i < numberOfThreads; i++) {
             CalculatingThread task;
             if(i!=numberOfThreads-1)
-                task=new CalculatingThread(i*width, (i+1)*width-1, this,countDownLatch);
+                task=new CalculatingThread(i*width, (i+1)*width-1, this,barrier);
             else
-                task=new CalculatingThread(i*width, matrix.length-1,this,countDownLatch);
+                task=new CalculatingThread(i*width, matrix.length-1,this,barrier);
 
             task.start();
         }
 
-        while (countDownLatch.getCount()!=1){}
+        while (barrier.getNumberWaiting()!=numberOfThreads){}
 
-        sweepMethod(matrix,numberOfThreads);
-        countDownLatch.countDown();
+        sweepMethod();
+
+        try {
+            barrier.await();
+            barrier.reset();
+            barrier.await();
+        }
+        catch (BrokenBarrierException e){
+            e.printStackTrace();
+        }
+
+
 
     }
 
@@ -270,36 +223,4 @@ public class SLAE {
         return result;
     }
 
-    public static void main(String[] args) {
-
-
-        double[][] matrix= {
-                 {-2,1,0,0,0,0,0,0,0,0,0,0},
-                 {-1,-11,1,0,0,0,0,0,0,0,0,0},
-                 {0,-1,21,-1,0,0,0,0,0,0,0,0},
-                 {0,0,3,-10,-1,0,0,0,0,0,0,0},
-                 {0,0,0,4,49,-6,0,0,0,0,0,0},
-                 {0,0,0,0,-11,19,7,0,0,0,0,0},
-                 {0,0,0,0,0,-2,4,-2,0,0,0,0},
-                 {0,0,0,0,0,0,-1,2,-1,0,0,0},
-                 {0,0,0,0,0,0,0,1,-12,10,0,0},
-                 {0,0,0,0,0,0,0,0,10,22,-10,0},
-                 {0,0,0,0,0,0,0,0,0,1,10,-1},
-                 {0,0,0,0,0,0,0,0,0,0,10,11}};
-
-
-       double[] rightSide={0,0,0,0,12,-30,0,0,-90,-80,0,0};
-     /*   double[][] matrix= {
-                 {-2,1,0,0,0,0},
-                 {-1,-3,1,0,0,0},
-                 {0,-1,2,-1,0,0},
-                 {0,0,3,5,-1,0},
-                 {0,0,0,4,11,-6},
-                 {0,0,0,0,-11,12}};
-        double[] rightSide={-3,2,10,13,-16,-29};
-        */
-        SLAE system=new SLAE(matrix,rightSide,2);
-        system.solve();
-
-    }
 }
