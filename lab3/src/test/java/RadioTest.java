@@ -1,11 +1,10 @@
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
+import org.junit.*;
 
 
-class RadioTest {
+public class RadioTest {
 
     @Test
-    void  raceTest(){
+    public void  raceTest() throws InterruptedException {
         Radio radio=new Radio();
         ScanThread scanButton= new ScanThread(radio);
         ResetThread resetButton=new ResetThread(radio);
@@ -14,7 +13,7 @@ class RadioTest {
 
 
         radio.on();
-        for (int i = 0; i < 35 ; i++) {
+        for (int i = 0; i < 5 ; i++) {
             scanButton.scan();
             resetButton.reset();
             scanButton.scan();
@@ -22,7 +21,9 @@ class RadioTest {
             resetButton.reset();
         }
 
-        Assert.assertTrue(radio.getCurrentStation().equals(radio.getStations().get(radio.getStations().size() - 36)));
+        Assert.assertEquals(radio.getCurrentStation(),
+                            radio.getStations().get(radio.getStations().size() - 6));
+        radio.off();
     }
 
 }

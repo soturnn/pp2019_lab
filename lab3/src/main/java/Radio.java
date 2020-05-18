@@ -27,7 +27,7 @@ public class Radio {
 
     public void setCurrentStation(Double _currentStation) {
         if((_currentStation<=maxStation)&&(_currentStation>=minStation))
-            this.currentStation = _currentStation;
+            this.currentStation = ((int)(_currentStation*10))/10.0;
     }
 
     public void on(){
