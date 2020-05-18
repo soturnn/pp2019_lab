@@ -5,11 +5,11 @@ import java.util.Iterator;
 public class MyHashSet<T> implements Set<T>, Iterable<T> {
 
     private int numberOfElements = 0;
-    private int lenght = 2;
+    private int length = 2;
     private Object[] data;
 
     public MyHashSet()   {
-        data=  new Object[lenght];
+        data=  new Object[length];
     }
 
     public MyHashSet(int _lenght) throws IllegalArgumentException {
@@ -20,34 +20,34 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
         catch (IllegalArgumentException e){
             e.printStackTrace();
         }
-       this.lenght=_lenght;
-        data=  new Object[lenght];
+       this.length =_lenght;
+        data=  new Object[length];
     }
 
     public MyHashSet(Collection<T> c) throws NullPointerException{
         try {
-            lenght = (int) (c.size() / 0.75) + 2;
+            length = (int) (c.size() / 0.75) + 2;
         }
         catch (NullPointerException e){
             e.printStackTrace();
         }
-        data= new Object[lenght];
+        data= new Object[length];
         this.addAll(c);
     }
 
-    protected int hashFunction(T value){
+    public int hashFunction(T value){
         int sum = 0;
         String valueString = value.toString();
-        return valueString.hashCode() % lenght;
+        return valueString.hashCode() % length;
     }
 
-    private void rebuilding(int newLenght){
-        MyHashSet<T> set= new MyHashSet<T>(newLenght);
+    public void rebuilding(int newLength){
+        MyHashSet<T> set= new MyHashSet<T>(newLength);
         for (T t: this) {
             set.add(t);
         }
         data=set.data;
-        lenght=newLenght;
+        length =newLength;
     }
 
     @Override
@@ -83,18 +83,21 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
             public boolean hasNext() {
                 int nextIndex=0;
                if (index==-1) {
-                    while ((currentNode == null)&&(nextIndex<lenght-1))
+                   Node<T> node=(Node<T>) data[0];
+                    while ((node == null))
                     {
+                        if(nextIndex>= length -1)
+                            return false;
                         nextIndex++;
-                        currentNode = (Node<T>)data[nextIndex];
+                        node = (Node<T>)data[nextIndex];
                     }
                 }
                 else {
                     if (currentNode.getNext()!= null)
                         return true;
-                    Node<T> nextNode=currentNode.getNext();
+                    Node<T> nextNode= null;
                     nextIndex=index+1;
-                    while ((nextNode == null) && (nextIndex< lenght))
+                    while ((nextNode == null) && (nextIndex< length))
                     {
                         nextNode= (Node<T>) data[nextIndex];
                         if (nextNode!= null)
@@ -103,14 +106,14 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
                     }
 
                 }
-                return nextIndex<lenght;
+                return nextIndex< length;
             }
 
             @Override
             public T next() {
                 if(index==-1){
                     index++;
-                    while ((currentNode == null)&&(index<lenght-1))
+                    while ((currentNode == null)&&(index< length -1))
                     {
                         index++;
                         currentNode = (Node<T>)data[index];
@@ -118,7 +121,7 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
                 }
                 else {
                     currentNode = currentNode.getNext();
-                    while ((currentNode == null) && (index < lenght - 1)) {
+                    while ((currentNode == null) && (index < length - 1)) {
                         index++;
                         currentNode = (Node<T>) data[index];
                         if (currentNode != null)
@@ -165,7 +168,7 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
     @Override
     public boolean add(T t) {
 
-        if((float)(numberOfElements+1)/lenght>0.75)
+        if((float)(numberOfElements+1)/ length >0.75)
             rebuilding((int)(1.5*numberOfElements) + 2);
         if(!this.contains(t))
             numberOfElements++;
@@ -287,7 +290,7 @@ public class MyHashSet<T> implements Set<T>, Iterable<T> {
 
     @Override
     public void clear() {
-        for (int i = 0; i < lenght; i++)
+        for (int i = 0; i < length; i++)
             data[i]=null;
         numberOfElements=0;
 

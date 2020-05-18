@@ -1,15 +1,25 @@
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 import org.junit.Assert;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-class MyHashSetTest {
-
-
-
+public class MyHashSetTest {
 
     @Test
-    void size() {
+    public void constructorTest(){
+        MyHashSet<Integer> emptyhs= new MyHashSet<>();
+        Object[] obj=emptyhs.toArray();
+        Assert.assertEquals(obj.length,0);
+
+        LinkedList<Integer> collection= new LinkedList<Integer>();
+        for (int i = 0; i < 10; i++)
+            collection.add(i);
+        MyHashSet<Integer> integerMyHashSet=new MyHashSet<>(collection);
+        integerMyHashSet.containsAll(collection);
+
+    }
+
+    @Test
+    public void size() {
         HashSet<Integer> hashSet=new HashSet<Integer>(4);
         MyHashSet<Integer> myHashSet=new MyHashSet<Integer>(4);
 
@@ -26,7 +36,7 @@ class MyHashSetTest {
     }
 
     @Test
-    void isEmpty() {
+    public void isEmpty() {
         HashSet<Integer> hashSet=new HashSet<Integer>(4);
         MyHashSet<Integer> myHashSet=new MyHashSet<Integer>(4);
 
@@ -41,7 +51,7 @@ class MyHashSetTest {
     }
 
     @Test
-    void contains() {
+    public void contains() {
         HashSet<Integer> hashSet=new HashSet<Integer>(4);
         MyHashSet<Integer> myHashSet=new MyHashSet<Integer>(4);
 
@@ -56,7 +66,7 @@ class MyHashSetTest {
     }
 
     @Test
-    void iterator() {
+    public void iterator() {
         HashSet<Integer> hashSet=new HashSet<Integer>(4);
         MyHashSet<Integer> myHashSet=new MyHashSet<Integer>(4);
 
@@ -72,7 +82,7 @@ class MyHashSetTest {
     }
 
     @Test
-    void toArray() {
+    public void toArray() {
         HashSet<Integer> hashSet=new HashSet<Integer>(4);
         MyHashSet<Integer> myHashSet=new MyHashSet<Integer>(4);
 
@@ -93,7 +103,7 @@ class MyHashSetTest {
     }
 
     @Test
-    void remove() {
+    public void remove() {
         HashSet<Integer> hashSet=new HashSet<Integer>(4);
         MyHashSet<Integer> myHashSet=new MyHashSet<Integer>(4);
 
@@ -112,7 +122,7 @@ class MyHashSetTest {
     }
 
     @Test
-    void containsAll() {
+    public void containsAll() {
         HashSet<Integer> hashSet=new HashSet<Integer>(4);
         MyHashSet<Integer> myHashSet=new MyHashSet<Integer>(4);
 
@@ -138,7 +148,7 @@ class MyHashSetTest {
     }
 
     @Test
-    void addAll() {
+    public void addAll() {
         HashSet<Integer> hashSet=new HashSet<Integer>(4);
         MyHashSet<Integer> myHashSet=new MyHashSet<Integer>(4);
 
@@ -153,7 +163,7 @@ class MyHashSetTest {
     }
 
     @Test
-    void removeAll() {
+    public void removeAll() {
         HashSet<Integer> hashSet=new HashSet<Integer>(4);
         MyHashSet<Integer> myHashSet=new MyHashSet<Integer>(4);
 
