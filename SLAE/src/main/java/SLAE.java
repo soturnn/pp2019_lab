@@ -2,12 +2,17 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
 public class SLAE {
-    public volatile static double[][] matrix;
-    private volatile static double[] rightSideOfEquation;
-    private volatile static double[] x;
+
+    public volatile double[][] matrix;
+    private volatile double[] rightSideOfEquation;
+    private volatile double[] x;
     private int numberOfThreads=3;
     private int width;
     private CyclicBarrier barrier;
+
+    public int getNumberOfThreads() {
+        return numberOfThreads;
+    }
 
     public double getX(int index) {
         try {
@@ -53,30 +58,11 @@ public class SLAE {
         x[index] = value;
     }
 
-
     public int getWidth() {
         return width;
     }
 
-    SLAE(){
-        int n=12;
-        matrix = new double [n][n];
-        rightSideOfEquation=new double[n];
-        for (int i = 0; i < n; i++) {
-            if(i!=0)
-                matrix[i][i-1]=Math.random()*20-10;
-            if(i!=n-1)
-                matrix[i][i+1]=Math.random()*20-10;
-            matrix[i][i]= Math.random()*10+20;
-            rightSideOfEquation[i]=Math.random()*80-20;
-        }
-
-        width = matrix.length/numberOfThreads;
-        barrier=new CyclicBarrier(numberOfThreads+1);
-        x=new double[matrix.length];
-    }
-
-    SLAE(double[][] _matrix, double[] coef, int _numberOfThreads){
+    public SLAE(double[][] _matrix, double[] coef, int _numberOfThreads){
         try{
             if((_numberOfThreads<0)||(_numberOfThreads>_matrix.length/2))
                 throw new IllegalArgumentException();
@@ -89,12 +75,14 @@ public class SLAE {
             for (int j = 0; j < _matrix.length; j++)
                 matrix[i][j]=_matrix[i][j];
         numberOfThreads=_numberOfThreads;
-       // rightSideOfEquation=coef.clone();
         rightSideOfEquation=new double[coef.length];
         for (int i = 0; i < coef.length; i++) {
             rightSideOfEquation[i]=coef[i];
         }
-        width = matrix.length/numberOfThreads;
+        if (numberOfThreads!=1)
+            width = matrix.length/numberOfThreads;
+        else
+            width=matrix.length-1;
         barrier=new CyclicBarrier(numberOfThreads+1);
         x=new double[matrix.length];
     }
@@ -187,6 +175,7 @@ public class SLAE {
 
         while (barrier.getNumberWaiting()!=numberOfThreads){}
 
+        if(numberOfThreads!=1)
         sweepMethod();
 
         try {
@@ -200,27 +189,6 @@ public class SLAE {
 
 
 
-    }
-
-    public static double det(double[][] matrix) {
-        double result=0;
-        if (matrix.length == 1)
-            return matrix[0][0];
-        if (matrix.length == 2)
-            return matrix[0][0]*matrix[1][1]-matrix[0][1]*matrix[1][0];
-
-        for (int i = 0; i < matrix.length; i++)
-            if(matrix[0][i]!=0)
-            {
-                double[][] minor= new double[matrix.length-1][matrix.length-1];
-                for (int j = 1; j < matrix.length; j++)
-                    for (int k = 0; k < matrix.length; k++)
-                        if (k != i)
-                            minor[j-1][(k>i) ? k-1 : k] = matrix[j][k];
-
-                result += matrix[0][i] * det(minor)*Math.pow(-1,i);
-            }
-        return result;
     }
 
 }

@@ -1,14 +1,14 @@
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-class CalculatingThread extends Thread{
+public class CalculatingThread extends Thread{
 
     private int bottomIndex;
     private int topIndex;
     private SLAE system;
     private CyclicBarrier barrier;
 
-    CalculatingThread(int _bottomIndex, int _topIndex, SLAE _matr, CyclicBarrier _latch){
+    public CalculatingThread(int _bottomIndex, int _topIndex, SLAE _matr, CyclicBarrier _latch){
         try {
             system = _matr;
             if((_bottomIndex<0)||(_topIndex<0)||(_bottomIndex>system.matrix.length)||(_topIndex>system.matrix.length))
@@ -61,6 +61,11 @@ class CalculatingThread extends Thread{
         }
         int length = system.matrix.length;
         int width=system.getWidth();
+
+        if(system.getNumberOfThreads()==1)
+            for (int i = 0; i <= topIndex; i++) {
+                system.setX(i, (system.getRightSide(i))/system.matrix[i][i]);
+            }
 
         if (bottomIndex==0){
             for (int i = 1; i < topIndex-bottomIndex; i++) {

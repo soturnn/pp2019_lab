@@ -1,8 +1,8 @@
-import org.junit.jupiter.api.Test;
 import org.junit.Assert;
+import org.junit.Test;
 
 
-class SLAETest {
+public class SLAETest {
 
     @Test
     public void rightSolveTest() throws InterruptedException {
@@ -11,7 +11,7 @@ class SLAETest {
             int size = 100;
             double[][] doubles = new double[size][size];
             double[] rightSide = new double[size];
-            int numberOfThreads = 4;
+            int numberOfThreads = 1;
 
             for (int j = 0; j < doubles.length; j++) {
                 if (j != 0)
