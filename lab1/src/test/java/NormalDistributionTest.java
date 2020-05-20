@@ -1,12 +1,15 @@
 import org.junit.Assert;
 import org.junit.Test;
 
-class NormalDistributionTest {
+
+public class NormalDistributionTest {
 
     @Test
-   public void randomRef() {
-        double result = NormalDistribution.randomRef();
-        Assert.assertTrue(Math.abs(result)<4);
+    public void randomRef() {
+
+        for (int i = 0; i < 1000; i++) {
+            Assert.assertTrue(Math.abs(NormalDistribution.randomRef())<4/6.0);
+        }
     }
 
 }
